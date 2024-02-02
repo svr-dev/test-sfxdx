@@ -19,4 +19,11 @@ export class OrderDAO {
       return this.orderModel.create(orderData as OrderCreationAttrs, { transaction });
     }
   }
+
+  async findLatestOrder(): Promise<Order | null> {
+    return this.orderModel.findOne({
+      order: [['blockNumber', 'DESC']],
+      limit: 1,
+    });
+  }
 }

@@ -12,20 +12,10 @@ export class OrdersService {
     @InjectModel(Order) private ordersRepository: typeof Order,
     private readonly syncService: SyncService,
   ) {}
-  
-  async getOrders(params: GetOrdersDto):Promise<Order[]> {
-    const ordersCount = await this.checkOrdersCount();
-    console.log('[OrdersService] getOrders -> orders: ', ordersCount);
-    return await this.fetchOrdersFromDB(params);
-  }
 
-  private async checkOrdersCount():Promise<number> {
-    const ordersCount = await this.ordersRepository.count();
-    if (ordersCount === 0) {
-      console.log('[OrdersService] database empty, performing sync...');
-      await this.syncService.syncBlockchainEvents();
-    }
-    return ordersCount;
+  async getOrders(params: GetOrdersDto): Promise<Order[]> {
+    await this.syncService.syncBlockchainEvents();
+    return await this.fetchOrdersFromDB(params);
   }
 
   private async fetchOrdersFromDB(params: GetOrdersDto):Promise<Order[]> {
@@ -70,6 +60,7 @@ export class OrdersService {
   }
 
   async fetchMatchingOrders(params: GetMatchingOrdersDto) {
+    await this.syncService.syncBlockchainEvents();
     const { tokenA, tokenB } = params;
 
     const matchingOrders = await this.ordersRepository.findAll({

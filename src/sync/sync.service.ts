@@ -12,25 +12,29 @@ export class SyncService {
   ) {}
 
   async syncBlockchainEvents() {
-    const transaction = await this.sequelize.transaction();
-    try {
-      const deploymentBlock = await this.contractService.getContractDeploymentBlock();
+    const latestOrder = await this.orderDAO.findLatestOrder();
+    const latestDBBlock: bigint | null = latestOrder ? BigInt(latestOrder.blockNumber) : null;
+    const startBlock: bigint = latestDBBlock !== null ? latestDBBlock + 1n : await this.contractService.getContractDeploymentBlock();
 
-      await this.processCreatedEvents(deploymentBlock, transaction);
-      await this.processCancelledEvents(deploymentBlock, transaction);
-      await this.processMatchedEvents(deploymentBlock, transaction);
-
-      await transaction.commit();
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
+    if (latestDBBlock === null || await this.contractService.isNewBlockAvailable()) {
+      const transaction = await this.sequelize.transaction();
+      try {
+        await this.processCreatedEvents(startBlock, transaction);
+        await this.processCancelledEvents(startBlock, transaction);
+        await this.processMatchedEvents(startBlock, transaction);
+        await transaction.commit();
+      } catch (error) {
+        await transaction.rollback();
+        console.error("Failed to sync blockchain events:", error);
+      }
+    } else {
+      console.log("No new blocks to sync or database is already up to date. Skipping synchronization process.");
     }
   }
-
-  private async processCreatedEvents(deploymentBlock: number, transaction: any) {
+  
+  private async processCreatedEvents(deploymentBlock: bigint, transaction: any) {
     const events = await this.contractService.fetchEventsSinceBlock('OrderCreated', deploymentBlock);
-    console.log('event OrderCreated: ', events[0])
-
+    
     for (const event of events) {
       await this.orderDAO.createOrUpdateOrder({
         orderId: event.returnValues.id.toString(),
@@ -48,9 +52,8 @@ export class SyncService {
     }
   }
 
-  private async processCancelledEvents(deploymentBlock: number, transaction: any) {
+  private async processCancelledEvents(deploymentBlock: bigint, transaction: any) {
     const events = await this.contractService.fetchEventsSinceBlock('OrderCancelled', deploymentBlock);
-    console.log('event OrderCancelled: ', events[0])
     for (const event of events) {
       await this.orderDAO.createOrUpdateOrder({
         orderId: event.returnValues.id.toString(),
@@ -60,9 +63,8 @@ export class SyncService {
     }
   }
 
-  private async processMatchedEvents(deploymentBlock: number, transaction: any) {
+  private async processMatchedEvents(deploymentBlock: bigint, transaction: any) {
     const events = await this.contractService.fetchEventsSinceBlock('OrderMatched', deploymentBlock);
-    console.log('event OrderMatched: ', events[0])
 
     for (const event of events) {
       if (event.returnValues['amountLeftToFill'] > 0 ) {

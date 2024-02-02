@@ -15,7 +15,7 @@ export interface OrderCreationAttrs {
   fee: string;
   feeRate: string;
   cancellable: boolean;
-  blockNumber: string;
+  blockNumber: bigint;
   transactionHash: string;
   matchedId: string;
 }
@@ -66,7 +66,7 @@ export class Order extends Model<Order, OrderCreationAttrs> {
   cancellable: boolean | null;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  blockNumber: string;
+  blockNumber: bigint;
 
   @Column({ type: DataType.STRING, allowNull: false })
   transactionHash: string;
