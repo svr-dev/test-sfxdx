@@ -8,7 +8,7 @@ export class ContractService {
   async getContractDeploymentBlock() {
     const web3 = this.web3Service.getWeb3();
     const receipt = await web3.eth.getTransactionReceipt(process.env.DEPLOYMENT_TX_HASH);
-    return receipt.blockNumber;
+    return Number(receipt.blockNumber);
   }
   
   async fetchEventsSinceBlock(eventType: string, startBlock: number | bigint | string): Promise<any[]> {

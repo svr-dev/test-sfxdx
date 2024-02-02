@@ -4,12 +4,18 @@ export interface OrderCreationAttrs {
   orderId: string;
   tokenA: string;
   tokenB: string;
-  orderType: 'market' | 'limit';
+  amountA: string;
+  amountB: string;
+  status: 'active' | 'partially_filled' | 'filled' | 'cancelled' | null
+  isMarket: boolean;
+  amountReceived: string;
+  amountPaid: string;
+  amountLeftToFill: string;
   userAddress: string;
-  amountA: bigint;
-  amountB: bigint;
-  cancellable?: boolean;
-  blockNumber: bigint;
+  fee: string;
+  feeRate: string;
+  cancellable: boolean;
+  blockNumber: string;
   transactionHash: string;
 }
 
@@ -25,23 +31,41 @@ export class Order extends Model<Order, OrderCreationAttrs> {
   @Column({ type: DataType.STRING, allowNull: false })
   tokenB: string;
 
-  @Column({ type: DataType.ENUM('market', 'limit'), allowNull: false })
-  orderType: 'market' | 'limit';
+  @Column({ type: DataType.STRING, allowNull: false })
+  amountA: string;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  amountB: string;
+
+  @Column({ type: DataType.BOOLEAN, allowNull: false })
+  isMarket: boolean;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  amountReceived: string
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  amountPaid: string
+  
+  @Column({ type: DataType.STRING, allowNull: true })
+  amountLeftToFill: string
+  
+  @Column({ type: DataType.ENUM('active', 'partially_filled', 'filled', 'cancelled'), allowNull: true })
+  status: 'active' | 'partially_filled' | 'filled' | 'cancelled' | null
 
   @Column({ type: DataType.STRING, allowNull: false })
   userAddress: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
-  amountA: bigint;
-
-  @Column({ type: DataType.STRING, allowNull: false })
-  amountB: bigint;
+  @Column({ type: DataType.STRING, allowNull: true })
+  fee: string;
+  
+  @Column({ type: DataType.STRING, allowNull: true })
+  feeRate: string;
 
   @Column({ type: DataType.BOOLEAN, allowNull: true })
   cancellable: boolean | null;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  blockNumber: bigint;
+  blockNumber: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
   transactionHash: string;
