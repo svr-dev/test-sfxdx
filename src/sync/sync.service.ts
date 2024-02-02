@@ -17,11 +17,8 @@ export class SyncService {
       const deploymentBlock = await this.contractService.getContractDeploymentBlock();
 
       await this.processCreatedEvents(deploymentBlock, transaction);
-      console.log('----')
       await this.processCancelledEvents(deploymentBlock, transaction);
-      console.log('----')
       await this.processMatchedEvents(deploymentBlock, transaction);
-      console.log('----')
 
       await transaction.commit();
     } catch (error) {
@@ -77,6 +74,7 @@ export class SyncService {
           amountLeftToFill: event.returnValues.amountLeftToFill,
           fee: event.returnValues.fee,
           feeRate: event.returnValues.feeRate,
+          matchedId: event.returnValues.matchedId,
           cancellable: true,
         }, transaction);
       }
@@ -88,6 +86,7 @@ export class SyncService {
         amountLeftToFill: event.returnValues.amountLeftToFill,
         fee: event.returnValues.fee,
         feeRate: event.returnValues.feeRate,
+        matchedId: event.returnValues.matchedId,
         cancellable: false,
       }, transaction);
     }

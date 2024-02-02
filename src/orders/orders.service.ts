@@ -13,13 +13,13 @@ export class OrdersService {
     private readonly syncService: SyncService,
   ) {}
   
-  async getOrders(params: GetOrdersDto) {
+  async getOrders(params: GetOrdersDto):Promise<Order[]> {
     const ordersCount = await this.checkOrdersCount();
     console.log('[OrdersService] getOrders -> orders: ', ordersCount);
     return await this.fetchOrdersFromDB(params);
   }
 
-  private async checkOrdersCount() {
+  private async checkOrdersCount():Promise<number> {
     const ordersCount = await this.ordersRepository.count();
     if (ordersCount === 0) {
       console.log('[OrdersService] database empty, performing sync...');
@@ -28,12 +28,11 @@ export class OrdersService {
     return ordersCount;
   }
 
-  private async fetchOrdersFromDB(params: GetOrdersDto) {
+  private async fetchOrdersFromDB(params: GetOrdersDto):Promise<Order[]> {
     const { tokenA, tokenB, user, active } = params;
 
     let whereCondition = {};
 
-    // Filtering by tokens and user
     if (tokenA) {
       whereCondition['tokenA'] = tokenA;
     }
@@ -70,8 +69,27 @@ export class OrdersService {
     return orders;
   }
 
-  getMatchingOrders(params: GetMatchingOrdersDto): any {
-    // mock response
-    return [{ orderId: 1, tokenA: params.tokenA, tokenB: params.tokenB, amountA: params.amountA, amountB: params.amountB }];
+  async fetchMatchingOrders(params: GetMatchingOrdersDto) {
+    const { tokenA, tokenB } = params;
+
+    const matchingOrders = await this.ordersRepository.findAll({
+      where: {
+        tokenA,
+        tokenB,
+        status: {
+          [Op.or]: ['active', 'partially_filled']
+        }
+      },
+      attributes: ['orderId', 'tokenA', 'tokenB', 'amountA', 'amountB', 'matchedId']
+    });
+
+    // For testing purposes
+    console.log('[OrdersService] matched Orders:', matchingOrders.map(order => ({
+      orderId: order.orderId,
+      tokens: { tokenA: order.tokenA, tokenB: order.tokenB },
+      amounts: { amountA: order.amountA, amountB: order.amountB },
+      matchedId: order.matchedId
+    })));
+    return matchingOrders
   }
 }

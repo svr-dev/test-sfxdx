@@ -19,6 +19,4 @@ export class OrderDAO {
       return this.orderModel.create(orderData as OrderCreationAttrs, { transaction });
     }
   }
-
-  // You can add methods to find the latest order or perform other operations, also supporting transactions
 }

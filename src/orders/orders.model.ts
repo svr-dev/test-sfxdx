@@ -4,12 +4,12 @@ export interface OrderCreationAttrs {
   orderId: string;
   tokenA: string;
   tokenB: string;
-  amountA: string;
-  amountB: string;
+  amountA: bigint;
+  amountB: bigint;
   status: 'active' | 'partially_filled' | 'filled' | 'cancelled' | null
   isMarket: boolean;
-  amountReceived: string;
-  amountPaid: string;
+  amountReceived: bigint;
+  amountPaid: bigint;
   amountLeftToFill: string;
   userAddress: string;
   fee: string;
@@ -17,6 +17,7 @@ export interface OrderCreationAttrs {
   cancellable: boolean;
   blockNumber: string;
   transactionHash: string;
+  matchedId: string;
 }
 
 @Table({ tableName: 'orders' })
@@ -32,19 +33,19 @@ export class Order extends Model<Order, OrderCreationAttrs> {
   tokenB: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  amountA: string;
+  amountA: bigint;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  amountB: string;
+  amountB: bigint;
 
   @Column({ type: DataType.BOOLEAN, allowNull: false })
   isMarket: boolean;
 
   @Column({ type: DataType.STRING, allowNull: true })
-  amountReceived: string
+  amountReceived: bigint
 
   @Column({ type: DataType.STRING, allowNull: true })
-  amountPaid: string
+  amountPaid: bigint
   
   @Column({ type: DataType.STRING, allowNull: true })
   amountLeftToFill: string
@@ -69,4 +70,7 @@ export class Order extends Model<Order, OrderCreationAttrs> {
 
   @Column({ type: DataType.STRING, allowNull: false })
   transactionHash: string;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  matchedId: string;
 }

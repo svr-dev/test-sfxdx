@@ -18,6 +18,6 @@ export class OrdersController {
   @Get('/getMatchingOrders')
   @UsePipes(new ValidationPipe({ transform: true }))
   getMatchingOrders(@Query() params: GetMatchingOrdersDto): any {
-    return this.ordersService.getMatchingOrders(params);
+    return this.ordersService.fetchMatchingOrders(params);
   }
 }
